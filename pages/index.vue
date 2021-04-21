@@ -7,6 +7,28 @@
       </div>
 
       <div class="r-controls">
+        <!-- Go back one week button -->
+        <v-btn
+          icon
+          @click="changeWeek(-7)"
+        >
+          <v-icon>
+            mdi-chevron-left
+          </v-icon>
+        </v-btn>
+
+        <!-- Go forward one week button -->
+        <v-btn
+          class="mr-2"
+          icon
+          @click="changeWeek(7)"
+        >
+          <v-icon>
+            mdi-chevron-right
+          </v-icon>
+        </v-btn>
+
+        <!-- Generate new rota button -->
         <v-btn
           v-ripple
           class="r-btn"
@@ -343,6 +365,16 @@ export default {
 
     isColActiveClass(columnIndex) {
       return this.activeWeek[columnIndex] === this.datePicker ? 'r-active' : '';
+    },
+
+    changeWeek(amountOfDays) {
+      // Datepicker's date as a date object
+      const currentDate = new Date(this.datePicker);
+
+      // Set the datepicker to the modified date
+      this.datePicker = new Date(currentDate.setDate(currentDate.getDate() + amountOfDays))
+        .toISOString()
+        .slice(0, 10);
     },
   },
 };

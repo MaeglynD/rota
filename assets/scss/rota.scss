@@ -60,13 +60,14 @@
           z-index: 2;
 
           .r-col{
-            justify-content: center;
             font-weight: 600;
             font-size: 13px;
-            display: flex;
-            align-items: center;
-            padding: 0 11px;
-            border-top: 2px solid transparent;
+            line-height: 47px;
+            text-align: center;
+
+            &:not(.r-search){
+              border-top: 2px solid transparent;
+            }
 
             &.r-active{
               border-top: 2px solid $r-orange-accent;
@@ -100,8 +101,8 @@
         width: 20%;
         height: 100%;
         border-right: $r-divider-border;
-        @include ellipsisText();
         font-size: 12px;
+        @include ellipsisText();
 
         &.r-active{
           border-right: 2px solid $r-orange-accent;
