@@ -56,7 +56,6 @@
             :weekday-format="getFormattedDay"
             color="#f88065"
           />
-
           <div class="r-divider" />
 
           <div class="r-select-users-container">
@@ -78,6 +77,7 @@
               hide-details
               multiple
               solo
+              @change="getDatepickerEvents"
             >
               <template #selection="{ item, index }">
                 <!-- Chip -->
@@ -137,7 +137,7 @@
               :key="`day-${i}`"
               class="r-col"
             >
-              {{ date }}
+              {{ getFormattedDate(date) }}
             </div>
           </div>
 
@@ -149,17 +149,36 @@
           >
             <!-- User info column -->
             <div class="r-col r-user-col">
+              <!-- Avatar -->
               <img
                 :src="user.avatar"
                 alt="avatar"
               >
+
+              <!-- Info and records found -->
               <div class="r-user-info">
                 <div class="r-user-name">
                   {{ user.user }}
                 </div>
                 <div class="r-user-records">
-                  {{ user.records }}
+                  {{ user.records }} records found
                 </div>
+              </div>
+            </div>
+
+            <!-- Data columns -->
+            <div
+              v-for="(shift, colI) in user.shifts"
+              :key="`row-${i}-col-${colI}`"
+              class="r-col"
+            >
+              <div
+                v-for="(typeOfShift, dataI) in shift"
+                :key="`row-${i}-col-${colI}-record-${dataI}`"
+                :class="`r-shift ${typeOfShift}`"
+              >
+                <div class="r-sidebar" />
+                {{ typeOfShift }}
               </div>
             </div>
           </div>
@@ -180,7 +199,6 @@ export default {
     datePicker: '',
     searchTerm: '',
     selectedUsers: [],
-    activeWeek: [],
   }),
 
   computed: {
@@ -189,14 +207,19 @@ export default {
       'rotas',
       'pageState',
     ]),
+
     ...mapGetters([
       'isLoading',
     ]),
 
     filteredUsers() {
-      return this.users.filter(({ user }) =>
+      return this.selectedUsers.filter(({ user }) =>
         user.toLowerCase().includes(this.searchTerm.toLowerCase()),
       );
+    },
+
+    activeWeek() {
+      return this.datePicker ? this.getDaysOfTheWeek(this.datePicker) : [];
     },
 
     tableData() {
@@ -207,6 +230,11 @@ export default {
         rotas,
       } = this;
 
+      // Performance measure, used later on when filtering shift data
+      const filteredRotas = rotas.filter(({ date }) =>
+        activeWeek.includes(date),
+      );
+
       // Return users but with shift data
       return filteredUsers.map((user) => ({
         ...user,
@@ -215,16 +243,17 @@ export default {
         shifts: Array(7)
           // Fill with empty properties...
           .fill(0)
-
-          // For each day, filter the rotas to find correlative data...
+          // Filter data and format
           .map((x, i) =>
-            rotas.filter(({ userId, date }) =>
-              userId === user.userId && activeWeek[i] === date,
-            ),
-          )
-
-          // Return only whats needed ('morning' / 'afternoon')
-          .map(({ type }) => type),
+            rotas
+              // Filter rotas for matching userIds and dates...
+              .filter(({ userId, date }) =>
+                // eslint-disable-next-line comma-dangle
+                userId === user.userId && activeWeek[i] === date
+              )
+              // Format as ['morning'] or ['morning', 'afternoon']
+              .map(({ type }) => type),
+          ),
       }));
     },
   },
@@ -237,11 +266,39 @@ export default {
     // Set the initial datepicker date as the last day of starting month
     this.datePicker = `${year}-${month}-${new Date(year, month, 0).getDate()}`;
 
-    // Set the current week
-    this.activeWeek = this.getDaysOfTheWeek(this.datePicker);
-
     // Set the intial selected users
     this.selectedUsers = unreactiveClone(this.users);
+
+    // this.filteredUsers.map((user) => ({
+    //   ...user,
+
+    //   // Return an array representing the week's data...
+    //   shifts: Array(7)
+    //   // Fill with empty properties...
+    //     .fill(0)
+
+    //   // For each day, filter the rotas to find correlative data...
+    //     .map((x, i) => {
+    //       this.rotas.filter(({ userId, date }) => {
+    //         console.log(this.activeWeek[i]);
+    //         if (userId === user.userId && this.activeWeek[i] === date) {
+    //           console.log(userId, user.userId, i, this.activeWeek[i], date);
+    //         }
+
+    //         // eslint-disable-next-line comma-dangle
+    //         return userId === user.userId && this.activeWeek[i] === date;
+    //       },
+    //       );
+    //       return this.rotas.filter(({ userId, date }) =>
+    //       // eslint-disable-next-line comma-dangle
+    //         userId === user.userId && this.activeWeek[i] === date
+    //       );
+    //     },
+    //     )
+
+    //   // Return only whats needed ('morning' / 'afternoon')
+    //     .map(({ type }) => type),
+    // }));
   },
 
   methods: {
@@ -255,12 +312,26 @@ export default {
       return formattedDaysOfTheWeek[new Date(date).getDay(date)];
     },
 
+    getFormattedDate(date) {
+      return (new Date(date)).toLocaleDateString('en-GB', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      });
+    },
+
     removeUser(id) {
       this.selectedUsers = this.selectedUsers.filter(({ userId }) => userId !== id);
     },
 
     getDatepickerEvents(datePickerDate) {
-      const foundDate = this.rotas.filter(({ date }) => date === datePickerDate);
+      // Get the current selection of users userId's
+      const availableUsers = this.selectedUsers.map(({ userId }) => userId);
+
+      // An array of dates that match the given paramater
+      const foundDate = this.rotas.filter(({ date, userId }) =>
+        date === datePickerDate && availableUsers.includes(userId),
+      );
 
       // If a date has been found..
       if (foundDate.length === 1) {

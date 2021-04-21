@@ -49,10 +49,6 @@
         &.r-top-header{
           height: 50px;
         }
-
-        &:last-of-type{
-          border-bottom: 0;
-        }
       }
 
       .r-col{
@@ -88,11 +84,8 @@
 
         ::v-deep .v-select{
 
-          ::v-deep .v-list-item--active{
-
-            ::v-deep .v-list-item__title{
-              color: $r-orange-accent !important;
-            }
+          .v-chip__content{
+            color: $r-orange-accent;
           }
         }
       }
