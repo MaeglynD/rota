@@ -7,12 +7,15 @@
       </div>
 
       <div class="r-controls">
-        <div
+        <v-btn
           v-ripple
           class="r-btn"
+          :loading="isLoading"
+          text
+          @click="generateNewRota"
         >
           Generate new rota
-        </div>
+        </v-btn>
       </div>
     </div>
 
@@ -55,6 +58,7 @@
             :events="getDatepickerEvents"
             :weekday-format="getFormattedDay"
             color="#f88065"
+            locale="en-GB"
           />
           <div class="r-divider" />
 
@@ -124,10 +128,13 @@
           <!-- Top row -->
           <div class="r-row r-top-header">
             <!-- Search -->
-            <div class="r-col r-search">
+            <div class="r-col r-search r-user-col">
               <v-text-field
                 v-model="searchTerm"
-                placeholder="Search users"
+                prepend-inner-icon="mdi-magnify"
+                hide-details
+                height="49"
+                placeholder="Search users..."
               />
             </div>
 
@@ -135,7 +142,7 @@
             <div
               v-for="(date, i) in activeWeek"
               :key="`day-${i}`"
-              class="r-col"
+              :class="`r-col ${isColActiveClass(i)}`"
             >
               {{ getFormattedDate(date) }}
             </div>
@@ -150,10 +157,12 @@
             <!-- User info column -->
             <div class="r-col r-user-col">
               <!-- Avatar -->
-              <img
-                :src="user.avatar"
-                alt="avatar"
-              >
+              <div class="r-avatar-container">
+                <img
+                  :src="user.avatar"
+                  alt="avatar"
+                >
+              </div>
 
               <!-- Info and records found -->
               <div class="r-user-info">
@@ -170,7 +179,7 @@
             <div
               v-for="(shift, colI) in user.shifts"
               :key="`row-${i}-col-${colI}`"
-              class="r-col"
+              :class="`r-col ${isColActiveClass(colI)}`"
             >
               <div
                 v-for="(typeOfShift, dataI) in shift"
@@ -268,37 +277,6 @@ export default {
 
     // Set the intial selected users
     this.selectedUsers = unreactiveClone(this.users);
-
-    // this.filteredUsers.map((user) => ({
-    //   ...user,
-
-    //   // Return an array representing the week's data...
-    //   shifts: Array(7)
-    //   // Fill with empty properties...
-    //     .fill(0)
-
-    //   // For each day, filter the rotas to find correlative data...
-    //     .map((x, i) => {
-    //       this.rotas.filter(({ userId, date }) => {
-    //         console.log(this.activeWeek[i]);
-    //         if (userId === user.userId && this.activeWeek[i] === date) {
-    //           console.log(userId, user.userId, i, this.activeWeek[i], date);
-    //         }
-
-    //         // eslint-disable-next-line comma-dangle
-    //         return userId === user.userId && this.activeWeek[i] === date;
-    //       },
-    //       );
-    //       return this.rotas.filter(({ userId, date }) =>
-    //       // eslint-disable-next-line comma-dangle
-    //         userId === user.userId && this.activeWeek[i] === date
-    //       );
-    //     },
-    //     )
-
-    //   // Return only whats needed ('morning' / 'afternoon')
-    //     .map(({ type }) => type),
-    // }));
   },
 
   methods: {
@@ -314,9 +292,9 @@ export default {
 
     getFormattedDate(date) {
       return (new Date(date)).toLocaleDateString('en-GB', {
+        weekday: 'short',
         day: 'numeric',
         month: 'short',
-        year: 'numeric',
       });
     },
 
@@ -336,7 +314,7 @@ export default {
       // If a date has been found..
       if (foundDate.length === 1) {
         // Return the morning color
-        return foundDate.type === 'morning' ? '#1d85e8' : 'primary';
+        return foundDate[0].type === 'morning' ? '#1d85e8' : 'primary';
       }
 
       // If 2 dates have been found
@@ -354,13 +332,17 @@ export default {
       // Start with an empty array of length 7
       return Array(7).fill(0).map((x, i) => {
         // Get the day
-        const day = dateObj.getDate() - dateObj.getDay() + i + 1;
+        const day = dateObj.getDate() - dateObj.getDay() + i;
 
         // Return the formatted day
         return new Date(dateObj.setDate(day))
           .toISOString()
           .slice(0, 10);
       });
+    },
+
+    isColActiveClass(columnIndex) {
+      return this.activeWeek[columnIndex] === this.datePicker ? 'r-active' : '';
     },
   },
 };

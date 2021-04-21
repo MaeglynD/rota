@@ -3,7 +3,7 @@ export const successColor = '#2b9263';
 export const failureColor = '#ff6161';
 
 export const formattedDaysOfTheWeek = [
-  'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun',
+  'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat',
 ];
 
 // Wrapper for API calls, helps avoid repeat code
@@ -16,8 +16,8 @@ export const requestWrapper = async (context, attempt, onError, successSnack, fa
   try {
     await attempt();
 
-    // Fake delay
-    // await new Promise((resolve) => setTimeout(resolve, 100));
+    // This delay is left here on purpose as to allow the loading screen to be shown
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     // If theres any string to show in the sucess snackbar...
     if (successSnack) {
