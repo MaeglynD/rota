@@ -45,18 +45,18 @@
       <!-- Skeleton loader splashscreen -->
       <template v-if="isLoading">
         <div class="r-left-container">
-          <!-- datepicker -->
+          <!-- datepicker skeleton -->
           <v-skeleton-loader
             type="date-picker-options, date-picker-days"
           />
 
-          <!-- divider -->
+          <!-- divider skeleton -->
           <v-skeleton-loader
             type="divider"
             class="my-9 mx-2"
           />
 
-          <!-- box -->
+          <!-- box skeleton -->
           <v-skeleton-loader
             type="image"
             class="mx-2"
@@ -64,7 +64,7 @@
         </div>
 
         <div class="r-right-container r-loader">
-          <!-- box -->
+          <!-- box skeleton -->
           <v-skeleton-loader
             type="image"
           />
@@ -73,6 +73,7 @@
 
       <template v-else>
         <div class="r-left-container">
+          <!-- Datepicker -->
           <v-date-picker
             v-model="datePicker"
             no-title
@@ -82,6 +83,8 @@
             color="#f88065"
             locale="en-GB"
           />
+
+          <!-- Divider -->
           <div class="r-divider" />
 
           <div class="r-select-users-container">
@@ -89,6 +92,7 @@
               Selected users
             </div>
 
+            <!-- User selection -->
             <v-select
               v-model="selectedUsers"
               :items="users"
@@ -125,6 +129,7 @@
                   (+{{ selectedUsers.length - 1 }} others)
                 </span>
               </template>
+
               <template #item="data">
                 <!-- Avatar -->
                 <v-list-item-avatar>
@@ -188,9 +193,12 @@
 
               <!-- Info and records found -->
               <div class="r-user-info">
+                <!-- Name -->
                 <div class="r-user-name">
                   {{ user.user }}
                 </div>
+
+                <!-- Records found -->
                 <div class="r-user-records">
                   {{ user.records }} records found
                 </div>
@@ -233,26 +241,31 @@ export default {
   }),
 
   computed: {
+    // Vuex state
     ...mapState([
       'users',
       'rotas',
       'pageState',
     ]),
 
+    // Vuex getters
     ...mapGetters([
       'isLoading',
     ]),
 
+    // Get a list of users filtered by the search term
     filteredUsers() {
       return this.selectedUsers.filter(({ user }) =>
         user.toLowerCase().includes(this.searchTerm.toLowerCase()),
       );
     },
 
+    // Get the active week based on the datepickers active date
     activeWeek() {
       return this.datePicker ? this.getDaysOfTheWeek(this.datePicker) : [];
     },
 
+    // Get a list of users with shift data
     tableData() {
       const {
         activeWeek,
@@ -269,7 +282,6 @@ export default {
       // Return users but with shift data
       return filteredUsers.map((user) => ({
         ...user,
-
         // Return an array representing the week's data...
         shifts: Array(7)
           // Fill with empty properties...
@@ -290,11 +302,11 @@ export default {
   },
 
   async created() {
+    // Init data
     await this.getUsersAndRotas();
 
-    const [year, month, day] = this.rotas[0].date.split('-');
-
     // Set the initial datepicker date as the last day of starting month
+    const [year, month, day] = this.rotas[0].date.split('-');
     this.datePicker = `${year}-${month}-${new Date(year, month, 0).getDate()}`;
 
     // Set the intial selected users
@@ -302,16 +314,19 @@ export default {
   },
 
   methods: {
+    // Vuex actions
     ...mapActions([
       'getUsersAndRotas',
       'generateNewRota',
       'showSnackbar',
     ]),
 
+    // Get formatted day e.g. 'Thu', 'Wed'
     getFormattedDay(date) {
       return formattedDaysOfTheWeek[new Date(date).getDay(date)];
     },
 
+    // Get a formatted date e.g. Thu, 30 Nov
     getFormattedDate(date) {
       return (new Date(date)).toLocaleDateString('en-GB', {
         weekday: 'short',
@@ -320,10 +335,12 @@ export default {
       });
     },
 
+    // Remove a user from the selection
     removeUser(id) {
       this.selectedUsers = this.selectedUsers.filter(({ userId }) => userId !== id);
     },
 
+    // Get the dots below each date picker day
     getDatepickerEvents(datePickerDate) {
       // Get the current selection of users userId's
       const availableUsers = this.selectedUsers.map(({ userId }) => userId);
@@ -348,6 +365,7 @@ export default {
       return false;
     },
 
+    // Get the focused week
     getDaysOfTheWeek(date) {
       const dateObj = new Date(date);
 
@@ -363,10 +381,12 @@ export default {
       });
     },
 
+    // Check if a the column is being selected based on its index
     isColActiveClass(columnIndex) {
       return this.activeWeek[columnIndex] === this.datePicker ? 'r-active' : '';
     },
 
+    // Move forward or backwards x amount of days
     changeWeek(amountOfDays) {
       // Datepicker's date as a date object
       const currentDate = new Date(this.datePicker);
