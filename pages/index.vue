@@ -53,7 +53,6 @@
             no-title
             full-width
             :events="getDatepickerEvents"
-            :event-color="(date) => date[9] % 2 ? '#1d85e8' : 'primary'"
             :weekday-format="getFormattedDay"
             color="#f88065"
           />
@@ -122,7 +121,48 @@
         </div>
 
         <div class="r-right-container">
-        <!--  -->
+          <!-- Top row -->
+          <div class="r-row r-top-header">
+            <!-- Search -->
+            <div class="r-col r-search">
+              <v-text-field
+                v-model="searchTerm"
+                placeholder="Search users"
+              />
+            </div>
+
+            <!-- Days of the week -->
+            <div
+              v-for="(date, i) in activeWeek"
+              :key="`day-${i}`"
+              class="r-col"
+            >
+              {{ date }}
+            </div>
+          </div>
+
+          <!-- Data rows -->
+          <div
+            v-for="(user, i) in tableData"
+            :key="`row-${i}`"
+            class="r-row"
+          >
+            <!-- User info column -->
+            <div class="r-col r-user-col">
+              <img
+                :src="user.avatar"
+                alt="avatar"
+              >
+              <div class="r-user-info">
+                <div class="r-user-name">
+                  {{ user.user }}
+                </div>
+                <div class="r-user-records">
+                  {{ user.records }}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </template>
     </div>
@@ -138,7 +178,9 @@ import { formattedDaysOfTheWeek, unreactiveClone } from '../utils';
 export default {
   data: () => ({
     datePicker: '',
+    searchTerm: '',
     selectedUsers: [],
+    activeWeek: [],
   }),
 
   computed: {
@@ -150,6 +192,41 @@ export default {
     ...mapGetters([
       'isLoading',
     ]),
+
+    filteredUsers() {
+      return this.users.filter(({ user }) =>
+        user.toLowerCase().includes(this.searchTerm.toLowerCase()),
+      );
+    },
+
+    tableData() {
+      const {
+        activeWeek,
+        datePicker,
+        filteredUsers,
+        rotas,
+      } = this;
+
+      // Return users but with shift data
+      return filteredUsers.map((user) => ({
+        ...user,
+
+        // Return an array representing the week's data...
+        shifts: Array(7)
+          // Fill with empty properties...
+          .fill(0)
+
+          // For each day, filter the rotas to find correlative data...
+          .map((x, i) =>
+            rotas.filter(({ userId, date }) =>
+              userId === user.userId && activeWeek[i] === date,
+            ),
+          )
+
+          // Return only whats needed ('morning' / 'afternoon')
+          .map(({ type }) => type),
+      }));
+    },
   },
 
   async created() {
@@ -159,6 +236,10 @@ export default {
 
     // Set the initial datepicker date as the last day of starting month
     this.datePicker = `${year}-${month}-${new Date(year, month, 0).getDate()}`;
+
+    // Set the current week
+    this.activeWeek = this.getDaysOfTheWeek(this.datePicker);
+
     // Set the intial selected users
     this.selectedUsers = unreactiveClone(this.users);
   },
@@ -194,6 +275,21 @@ export default {
       }
 
       return false;
+    },
+
+    getDaysOfTheWeek(date) {
+      const dateObj = new Date(date);
+
+      // Start with an empty array of length 7
+      return Array(7).fill(0).map((x, i) => {
+        // Get the day
+        const day = dateObj.getDate() - dateObj.getDay() + i + 1;
+
+        // Return the formatted day
+        return new Date(dateObj.setDate(day))
+          .toISOString()
+          .slice(0, 10);
+      });
     },
   },
 };
