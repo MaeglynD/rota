@@ -3,12 +3,14 @@
     <!-- Navbar -->
     <div class="r-navbar">
       <div class="r-navbar-inner">
+        <!-- Logo -->
         <img
           src="~/assets/img/logo.png"
           alt="logo"
           class="r-logo"
         >
 
+        <!-- Tabs -->
         <div class="r-navbar-tabs">
           <div
             v-for="tab in navTabs"
@@ -55,11 +57,6 @@ export default {
       'snackbar',
     ]),
   },
-
-  created() {
-    //
-  },
-
 };
 </script>
 
