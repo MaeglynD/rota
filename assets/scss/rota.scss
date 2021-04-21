@@ -1,0 +1,125 @@
+.r-container{
+  height: 100%;
+  width: 100%;
+  padding: 50px;
+  display: flex;
+  flex-direction: column;
+
+  .r-header{
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+
+    .r-title{
+      font-size: 24px;
+    }
+
+    .r-controls{
+      margin-left: auto;
+
+    }
+  }
+
+  .r-rota-container{
+    display: flex;
+    height: 100%;
+    border-radius: 5px;
+    border: $r-divider-border;
+
+    .r-right-container{
+      height: 100%;
+      width: 100%;
+
+      &.r-loader{
+        padding: 20px;
+      }
+
+      .v-skeleton-loader, ::v-deep .v-skeleton-loader__image{
+        height: 100%;
+      }
+    }
+
+    .r-left-container{
+      width: 100%;
+      max-width: 270px;
+      padding: 10px;
+      border-right: $r-divider-border;
+      overflow: auto;
+
+      .r-divider{
+        width: calc(100% - 21px);
+        margin: 0px auto;
+        overflow: hidden;
+        height: 1px;
+        background: $r-divider;
+        margin-bottom: 35px;
+      }
+
+      .r-select-users-container{
+        padding: 16px;
+        padding-top: 0;
+
+        ::v-deep .v-select{
+
+          ::v-deep .v-list-item--active{
+
+            ::v-deep .v-list-item__title{
+              color: $r-orange-accent !important;
+            }
+          }
+        }
+      }
+
+      ::v-deep .v-picker{
+
+        td .v-btn, th{
+          font-size: 11px !important;
+        }
+
+        .v-date-picker-table__events{
+
+          div{
+            height: 5px;
+            width: 5px;
+          }
+        }
+
+        .v-date-picker-header{
+          height: 51px;
+
+          .v-date-picker-header__value{
+            position: absolute;
+            left: 10px;
+            height: 100%;
+            width: 100%;
+
+            div, button {
+              height: 100%;
+              color: $r-text;
+              width: 100%;
+              text-align: left;
+            }
+          }
+
+          & > button{
+            z-index: 2;
+
+            &:first-child{
+              position: absolute;
+              right: 30px;
+            }
+
+            &:last-child{
+              position: absolute;
+              right: 0;
+            }
+
+            .mdi{
+              font-size: 20px;
+            }
+          }
+        }
+      }
+    }
+  }
+}
