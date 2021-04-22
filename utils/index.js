@@ -28,6 +28,7 @@ export const requestWrapper = async (context, attempt, onError, successSnack, fa
       });
     }
   } catch (err) {
+    console.log('hello');
     // If a function has been provided in the event of an error, invoke it
     if (onError) {
       await onError(err);
